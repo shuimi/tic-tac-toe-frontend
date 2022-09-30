@@ -1,0 +1,28 @@
+import React from 'react';
+import { AppProvider } from "./app.provider";
+import { Route, Routes } from "react-router-dom";
+import { AppShellLayout } from "./view";
+
+import SignUpPage from "./view/pages/sign-up";
+import SignInPage from "./view/pages/sign-in";
+import PlaygroundPage from "./view/pages/playground";
+import ProfilePage from "./view/pages/profile";
+
+export const AppRoot = () => {
+
+  const Authorized = <AppShellLayout>
+    <Routes>
+      <Route path={'/'} element={<PlaygroundPage/>} />
+      <Route path={'/profile'} element={<ProfilePage/>} />
+    </Routes>
+  </AppShellLayout>
+
+  const Unauthorized = <Routes>
+    <Route path={'/'} element={<SignInPage/>} />
+    <Route path={'/signup'} element={<SignUpPage/>} />
+  </Routes>
+
+  return <AppProvider>
+    {Authorized}
+  </AppProvider>
+}
