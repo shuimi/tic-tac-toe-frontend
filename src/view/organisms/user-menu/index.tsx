@@ -51,6 +51,7 @@ export const UserMenu: FC<UserMenuProps> = (props) => {
         {links.map(link => <Menu.Item onClick={() => routing.go.to(link.link)}>
           {link.label}
         </Menu.Item>)}
+        <Menu.Divider/>
         <Menu.Item icon={<Logout/>} onClick={onLogoutClick}>
           Выйти
         </Menu.Item>
