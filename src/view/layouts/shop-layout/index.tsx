@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import {
   Avatar,
+  Box,
   Button,
   Card,
   Center,
@@ -26,7 +27,7 @@ import {
   BallVolleyball,
   Barrel,
   BrandAmongus,
-  BrandTelegram, CurrencyEthereum, Icon
+  BrandTelegram, CurrencyEthereum, GardenCart, Icon
 } from "tabler-icons-react";
 
 
@@ -59,22 +60,29 @@ export const ProductCard = (props: ProductCardProps) => {
 
   return <Card>
     <Stack justify={'flex-end'} spacing={0}>
-      <Center p={'xs'}>
-        <Avatar size={156}>
-          {photo && photo({size: 156, strokeWidth: 1.2})}
-        </Avatar>
-      </Center>
-      <Card.Section component={Stack} p={'md'}>
-        <Title order={3}>{title}</Title>
-        <Text size={14}>{description}</Text>
-      </Card.Section>
+      <Box onClick={onMoreClick}>
+        <Center p={'xs'}>
+          <Avatar size={156}>
+            {photo && photo({size: 156, strokeWidth: 1.2})}
+          </Avatar>
+        </Center>
+        <Card.Section component={Stack} p={'md'} pb={'xl'}>
+          <Title order={3}>{title}</Title>
+          <Text size={14}>{description}</Text>
+        </Card.Section>
+      </Box>
       <Card.Section component={Stack} px={'md'}>
         <Group position={'apart'}>
           <UnstyledButton component={Group}>
             <CurrencyEthereum/>
             <Text size={16}>{price}</Text>
           </UnstyledButton>
-          <Button>В корзину</Button>
+          <Button
+            onClick={onAddClick}
+            leftIcon={<GardenCart size={22} strokeWidth={1.3}/>}
+          >
+            В корзину
+          </Button>
         </Group>
       </Card.Section>
     </Stack>
