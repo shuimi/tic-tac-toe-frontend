@@ -1,3 +1,5 @@
 export { AppShellLayout } from './app-shell'
 export { PlaygroundGridLayout } from './playground-grid'
 export { ErrorPageLayout } from './error-page'
+export { ShopLayout } from './shop-layout'
+export { ProfileLayout } from './profile-layout'

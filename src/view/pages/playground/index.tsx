@@ -59,7 +59,8 @@ function PlaygroundPage () {
 
   return <Container>
     <Stack align={'center'}>
-      <Group position='center' grow>
+
+      <Group position='apart' noWrap grow>
         <Card
           withBorder
           radius="md"
