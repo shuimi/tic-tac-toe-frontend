@@ -16,8 +16,8 @@ const appLinks = [
   {
     level: 0,
     id: 1,
-    label: 'Профиль',
-    link: 'profile',
+    label: 'Статистика',
+    link: 'stats',
     header: true,
   },
   {

@@ -1,4 +1,5 @@
-export * from './profile'
+export * from './stats'
+export * from './shop'
 export * from './playground'
 export * from './sign-in'
 export * from './sign-up'

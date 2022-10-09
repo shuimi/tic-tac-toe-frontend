@@ -7,13 +7,14 @@ import {
   Group,
   ActionIcon,
   NumberInput,
-  NumberInputHandlers, Select, Input
+  NumberInputHandlers, Select, Input, Grid
 } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { PlaygroundGridLayout } from "../../layouts";
 import { Cell, GameType, Mark } from "../../../data";
 import { Refresh } from "tabler-icons-react";
 import { TitledCard } from "../../components";
+import { PlayersOnlineList } from "../../organisms/players-online-list";
 
 
 function PlaygroundPage () {
@@ -56,72 +57,81 @@ function PlaygroundPage () {
 
 
   return <Container>
-    <Stack align={'center'}>
-      <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}} withBorder>
-        <Group align={'flex-end'}>
-          <Select
-            label='Тип игры'
-            placeholder="Выберите тип пигры"
-            data={[
-              { value: GameType.CLASSIC, label: 'Классика' },
-              { value: GameType.GOMOKU, label: 'Гомоку' },
-              { value: GameType.CUSTOM, label: 'Своя' },
-            ]}
-            defaultValue={GameType.CLASSIC}
-          />
-          <Input.Wrapper label={'Размер поля'}>
-            <Group spacing={5}>
-              <ActionIcon size={36} variant="default" onClick={onDecrementSize}>
-                –
-              </ActionIcon>
-              <NumberInput
-                hideControls
-                value={gameRank}
-                onChange={(val) => val && setGameRank(val)}
-                handlersRef={handlers}
-                max={15}
-                min={3}
-                step={1}
-                styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+    <Grid>
+      <Grid.Col span={'content'}>
+        <TitledCard title={'Игроки онлайн'}>
+          <PlayersOnlineList/>
+        </TitledCard>
+      </Grid.Col>
+      <Grid.Col span={'auto'}>
+        <Stack align={'center'}>
+          <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}} withBorder>
+            <Group align={'flex-end'}>
+              <Select
+                label='Тип игры'
+                placeholder="Выберите тип пигры"
+                data={[
+                  { value: GameType.CLASSIC, label: 'Классика' },
+                  { value: GameType.GOMOKU, label: 'Гомоку' },
+                  { value: GameType.CUSTOM, label: 'Своя' },
+                ]}
+                defaultValue={GameType.CLASSIC}
               />
-              <ActionIcon size={36} variant="default" onClick={onIncrementSize}>
-                +
-              </ActionIcon>
+              <Input.Wrapper label={'Размер поля'}>
+                <Group spacing={5}>
+                  <ActionIcon size={36} variant="default" onClick={onDecrementSize}>
+                    –
+                  </ActionIcon>
+                  <NumberInput
+                    hideControls
+                    value={gameRank}
+                    onChange={(val) => val && setGameRank(val)}
+                    handlersRef={handlers}
+                    max={15}
+                    min={3}
+                    step={1}
+                    styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+                  />
+                  <ActionIcon size={36} variant="default" onClick={onIncrementSize}>
+                    +
+                  </ActionIcon>
+                </Group>
+              </Input.Wrapper>
+              <Input.Wrapper label={'Длина линии'}>
+                <Group spacing={5}>
+                  <ActionIcon size={36} variant='default'>
+                    –
+                  </ActionIcon>
+                  <NumberInput
+                    hideControls
+                    max={gameRank}
+                    min={3}
+                    step={1}
+                    styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+                  />
+                  <ActionIcon size={36} variant='default'>
+                    +
+                  </ActionIcon>
+                </Group>
+              </Input.Wrapper>
             </Group>
-          </Input.Wrapper>
-          <Input.Wrapper label={'Длина линии'}>
-            <Group spacing={5}>
-              <ActionIcon size={36} variant='default'>
-                –
-              </ActionIcon>
-              <NumberInput
-                hideControls
-                max={gameRank}
-                min={3}
-                step={1}
-                styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
-              />
-              <ActionIcon size={36} variant='default'>
-                +
-              </ActionIcon>
-            </Group>
-          </Input.Wrapper>
-        </Group>
-        <Button leftIcon={<Refresh/>} onClick={onResetClick}>
-          Сбросить
-        </Button>
-      </TitledCard>
-      <Center mb={'lg'}>
-        <PlaygroundGridLayout
-          rank={gameRank}
-          data={playgroundCells}
-          onCellClick={onCellClick}
-          sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
-          spacing={30 / gameRank}
-          withPadding
-        />
-      </Center>
-    </Stack>
+            <Button leftIcon={<Refresh/>} onClick={onResetClick}>
+              Сбросить
+            </Button>
+          </TitledCard>
+          <Center mb={'lg'}>
+            <PlaygroundGridLayout
+              rank={gameRank}
+              data={playgroundCells}
+              onCellClick={onCellClick}
+              sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
+              spacing={30 / gameRank}
+              withPadding
+            />
+          </Center>
+        </Stack>
+      </Grid.Col>
+    </Grid>
   </Container>
 }
 

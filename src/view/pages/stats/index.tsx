@@ -83,7 +83,7 @@ const XYChartMock = () => {
 
 
 
-function ProfilePage () {
+function StatsPage () {
 
   const [historyDrawerOpened, setHistoryDrawerOpened] = useState(false)
 
@@ -249,4 +249,4 @@ function ProfilePage () {
   </>
 }
 
-export default ProfilePage;
+export default StatsPage;
