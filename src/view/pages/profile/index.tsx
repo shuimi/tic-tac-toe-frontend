@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Avatar,
-  Center,
   Drawer,
   Group,
   Paper,
@@ -11,106 +10,16 @@ import {
   UnstyledButton,
   Button,
   Badge,
-  Stack, Progress
+  Stack,
+  Progress
 } from "@mantine/core";
-import { AchievementsCard, DailyCard, ProfileCard, ProfileLayout } from "../../layouts/profile-layout";
-import { UserButton } from "../../components";
+import { ProfileLayout } from "../../layouts";
+import { UserButton, TitledCard } from "../../components";
 import { CurrencyEthereum, GitBranch } from "tabler-icons-react";
 import { PlaygroundGridLayout } from "../../layouts";
-
-
-export enum Player {
-  BOT,
-  PLAYER
-}
-
-export enum GameStatus {
-  UNFINISHED,
-  FINISHED_WIN,
-  FINISHED_LOSE,
-  FINISHED_DRAW,
-}
-
-export interface GameHistory {
-  id: string,
-  firstTurn: Player,
-  history: number[],
-  lastPosition: number[],
-  timestamp: string,
-  status: GameStatus,
-}
-
-
-
-const DailyMock = [
-  {
-    id: 0,
-    title: 'Боевая машина',
-    description: 'Победить или взять ничью 4 раза, игаря второй ход',
-    done: 2,
-    total: 4,
-    finished: false,
-    reward: 8,
-  },
-  {
-    id: 1,
-    title: 'Дипломат',
-    description: '10 раз завершить игру ничьей',
-    done: 7,
-    total: 10,
-    finished: false,
-    reward: 5,
-  },
-  {
-    id: 2,
-    title: 'Грандмастер',
-    description: '10 раз завершить игру победой',
-    done: 10,
-    total: 10,
-    finished: true,
-    reward: 10,
-  },
-]
-
-const AchievementsMock = [
-  {
-    id: 0,
-    title: 'Big daddy',
-    description: 'Сыграть игру на поле 12x12'
-  },
-  {
-    id: 1,
-    title: 'Маэстро-сто',
-    description: 'Ни разу не проиграть, сыграв 100 игр подряд'
-  },
-]
-
-const GamesMock: GameHistory[] = [
-  {
-    id: '1',
-    firstTurn: Player.BOT,
-    history: [2, 3, 5, 7],
-    lastPosition: [0, 0, 1, 2, 0, 1, 0, 2, 0],
-    timestamp: new Date(Date.now()).toDateString(),
-    status: GameStatus.FINISHED_DRAW,
-  },
-  {
-    id: '2',
-    firstTurn: Player.PLAYER,
-    history: [2, 3, 5, 7],
-    lastPosition: [0, 0, 1, 2, 0, 1, 0, 2, 0],
-    timestamp: new Date(Date.now()).toDateString(),
-    status: GameStatus.FINISHED_DRAW,
-  },
-  {
-    id: '3',
-    firstTurn: -1,
-    history: [2, 3, 5, 7],
-    lastPosition: [0, 0, 1, 2, 0, 1, 0, 2, 0],
-    timestamp: new Date(Date.now()).toDateString(),
-    status: GameStatus.FINISHED_DRAW,
-  },
-];
+import { AchievementsMock, DailyMock, GamesMock } from "../../../data";
+import { GameStatus, Player } from "../../../data";
+import { AchievementsCard, DailyCard } from "./components";
 
 
 function ProfilePage () {
@@ -148,9 +57,6 @@ function ProfilePage () {
     </Timeline>
   </Drawer>
 
-
-
-
   const Rows = GamesMock.map((game) => {
 
     const onOpenHistoryClick = () => {
@@ -166,7 +72,7 @@ function ProfilePage () {
 
 
     const ROW_MAX_HEIGHT = 40 * 3
-    const gameRank = 3
+    const gameRank = game.rank
 
     const LastPositionPlaygroundPreview = <Group>
       <PlaygroundGridLayout
@@ -179,7 +85,7 @@ function ProfilePage () {
         }
         sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
         spacing={30 / gameRank}
-        color={'cyan.2'}
+        withPadding
       />
     </Group>
 
@@ -200,7 +106,7 @@ function ProfilePage () {
     return <tr key={game.id}>
       <td>{firstTurnEntity}</td>
       <td>
-        <Text mb={'xs'}>Всего ходов: {game.lastPosition.length}</Text>
+        <Text mb={'xs'}>Всего ходов: {game.history.length}</Text>
         <Button onClick={onOpenHistoryClick}>
           Показать
         </Button>
@@ -243,19 +149,19 @@ function ProfilePage () {
   </Paper>
 
   const LeftPanel = <>
-    <ProfileCard title={'Задания'}>
+    <TitledCard title={'Задания'}>
       {DailyMock.map(daily =>
         <DailyCard key={`daily/${daily.id}`} { ...daily } />
       )}
-    </ProfileCard>
-    <ProfileCard title={'Достижения'}>
+    </TitledCard>
+    <TitledCard title={'Достижения'}>
       {AchievementsMock.map(achievement =>
         <AchievementsCard key={`achievement/${achievement.id}`} { ...achievement } />
       )}
-    </ProfileCard>
+    </TitledCard>
   </>
 
-  const RightSection = <ProfileCard title={'История игр'}>
+  const RightSection = <TitledCard title={'История игр'}>
     <Progress
       radius="xl"
       size={24}
@@ -266,7 +172,7 @@ function ProfilePage () {
       ]}
     />
     {GameHistoryTable}
-  </ProfileCard>
+  </TitledCard>
 
 
   return <>

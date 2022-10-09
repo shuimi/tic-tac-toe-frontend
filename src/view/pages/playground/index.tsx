@@ -1,21 +1,19 @@
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
-  Card,
   Center,
   Container,
   Stack,
-  Text,
-  Progress,
   Group,
   ActionIcon,
   NumberInput,
-  NumberInputHandlers
+  NumberInputHandlers, Select, Input
 } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { PlaygroundGridLayout } from "../../layouts";
-import { Cell, Mark } from "../../../data";
+import { Cell, GameType, Mark } from "../../../data";
 import { Refresh } from "tabler-icons-react";
-import { useEffect, useRef, useState } from "react";
+import { TitledCard } from "../../components";
 
 
 function PlaygroundPage () {
@@ -59,42 +57,60 @@ function PlaygroundPage () {
 
   return <Container>
     <Stack align={'center'}>
-
-      {/*<Group position='apart' noWrap grow>*/}
-      {/*  <Card*/}
-      {/*    withBorder*/}
-      {/*    radius="md"*/}
-      {/*    p="xl"*/}
-      {/*    sx={(theme) => ({*/}
-      {/*      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,*/}
-      {/*    })}*/}
-      {/*  >*/}
-      {/*    <Text size="xs" transform="uppercase" weight={700} color="dimmed">*/}
-      {/*      Monthly goal*/}
-      {/*    </Text>*/}
-      {/*    <Text size="lg" weight={500}>*/}
-      {/*      $5.431 / $10.000*/}
-      {/*    </Text>*/}
-      {/*    <Progress value={54.31} mt="md" size="lg" radius="xl" />*/}
-      {/*  </Card>*/}
-      {/*  <Card*/}
-      {/*    withBorder*/}
-      {/*    radius="md"*/}
-      {/*    p="xl"*/}
-      {/*    sx={(theme) => ({*/}
-      {/*      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,*/}
-      {/*    })}*/}
-      {/*  >*/}
-      {/*    <Text size="xs" transform="uppercase" weight={700} color="dimmed">*/}
-      {/*      Monthly goal*/}
-      {/*    </Text>*/}
-      {/*    <Text size="lg" weight={500}>*/}
-      {/*      $5.431 / $10.000*/}
-      {/*    </Text>*/}
-      {/*    <Progress value={54.31} mt="md" size="lg" radius="xl" />*/}
-      {/*  </Card>*/}
-      {/*</Group>*/}
-
+      <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}} withBorder>
+        <Group align={'flex-end'}>
+          <Select
+            label='Тип игры'
+            placeholder="Выберите тип пигры"
+            data={[
+              { value: GameType.CLASSIC, label: 'Классика' },
+              { value: GameType.GOMOKU, label: 'Гомоку' },
+              { value: GameType.CUSTOM, label: 'Своя' },
+            ]}
+            defaultValue={GameType.CLASSIC}
+          />
+          <Input.Wrapper label={'Размер поля'}>
+            <Group spacing={5}>
+              <ActionIcon size={36} variant="default" onClick={onDecrementSize}>
+                –
+              </ActionIcon>
+              <NumberInput
+                hideControls
+                value={gameRank}
+                onChange={(val) => val && setGameRank(val)}
+                handlersRef={handlers}
+                max={15}
+                min={3}
+                step={1}
+                styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+              />
+              <ActionIcon size={36} variant="default" onClick={onIncrementSize}>
+                +
+              </ActionIcon>
+            </Group>
+          </Input.Wrapper>
+          <Input.Wrapper label={'Длина линии'}>
+            <Group spacing={5}>
+              <ActionIcon size={36} variant='default'>
+                –
+              </ActionIcon>
+              <NumberInput
+                hideControls
+                max={gameRank}
+                min={3}
+                step={1}
+                styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+              />
+              <ActionIcon size={36} variant='default'>
+                +
+              </ActionIcon>
+            </Group>
+          </Input.Wrapper>
+        </Group>
+        <Button leftIcon={<Refresh/>} onClick={onResetClick}>
+          Сбросить
+        </Button>
+      </TitledCard>
       <Center mb={'lg'}>
         <PlaygroundGridLayout
           rank={gameRank}
@@ -102,32 +118,9 @@ function PlaygroundPage () {
           onCellClick={onCellClick}
           sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
           spacing={30 / gameRank}
+          withPadding
         />
       </Center>
-
-      <Group spacing={5}>
-        <ActionIcon size={42} variant="default" onClick={onDecrementSize}>
-          –
-        </ActionIcon>
-        <NumberInput
-          hideControls
-          value={gameRank}
-          onChange={(val) => val && setGameRank(val)}
-          handlersRef={handlers}
-          max={12}
-          min={3}
-          step={1}
-          styles={{ input: { width: 54, height: 42, textAlign: 'center' } }}
-        />
-        <ActionIcon size={42} variant="default" onClick={onIncrementSize}>
-          +
-        </ActionIcon>
-      </Group>
-
-      <Button leftIcon={<Refresh/>} onClick={onResetClick}>
-        Сбросить
-      </Button>
-
     </Stack>
   </Container>
 }

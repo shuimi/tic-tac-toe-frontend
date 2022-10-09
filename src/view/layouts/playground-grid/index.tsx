@@ -1,5 +1,5 @@
 import { Playground } from "../../../data";
-import { MantineColor, SimpleGrid } from "@mantine/core";
+import { Box, createStyles, DefaultProps, MantineColor, Paper, Selectors, SimpleGrid } from "@mantine/core";
 import { PlaygroundCell } from "../../components";
 import { useId } from "react";
 
@@ -8,25 +8,47 @@ interface PlaygroundGridProps extends Playground {
   sellSize?: number,
   spacing?: number,
   color?: MantineColor,
+  withPadding?: boolean
 }
 
 export const PlaygroundGridLayout = (props: PlaygroundGridProps) => {
 
-  const {rank, data, sellSize = 120, spacing = 5, onCellClick, color} = props
+  const {
+    rank,
+    data,
+    sellSize = 120,
+    spacing = 5,
+    withPadding = false,
+    onCellClick,
+    color,
+    ...others
+  } = props
 
   const playgroundId = useId()
 
-  return <SimpleGrid color={color} cols={rank} spacing={spacing}>
-    {
-      data.map((cell) => <PlaygroundCell
-          key={`${playgroundId}/${cell.position}`}
-          mark={cell.mark}
-          size={sellSize}
-          onClick={() => {
-            onCellClick && onCellClick(cell.position)
-          }}
-        />
-      )
-    }
-  </SimpleGrid>
+  return <Paper
+    sx={(theme) => ({
+      backgroundColor: theme.colorScheme == 'dark' ? theme.colors.dark[8] : theme.colors.gray[3]
+    })}
+    radius={'md'}
+    p={withPadding ? 'xs' : 0}
+    {...others}
+  >
+    <SimpleGrid
+      cols={rank}
+      spacing={spacing}
+    >
+      {
+        data.map((cell) => <PlaygroundCell
+            key={`${playgroundId}/${cell.position}`}
+            mark={cell.mark}
+            size={sellSize}
+            onClick={() => {
+              onCellClick && onCellClick(cell.position)
+            }}
+          />
+        )
+      }
+    </SimpleGrid>
+  </Paper>
 }
