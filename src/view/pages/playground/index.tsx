@@ -15,6 +15,7 @@ import { Cell, GameType, Mark } from "../../../data";
 import { Refresh } from "tabler-icons-react";
 import { TitledCard } from "../../components";
 import { PlayersOnlineList } from "../../organisms/players-online-list";
+import { GlobalChat } from "../../organisms/global-chat";
 
 
 function PlaygroundPage () {
@@ -130,6 +131,11 @@ function PlaygroundPage () {
             />
           </Center>
         </Stack>
+      </Grid.Col>
+      <Grid.Col span={'content'}>
+        <TitledCard title={'Общий чат'}>
+          <GlobalChat/>
+        </TitledCard>
       </Grid.Col>
     </Grid>
   </Container>

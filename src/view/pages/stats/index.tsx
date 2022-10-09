@@ -205,8 +205,8 @@ function StatsPage () {
         <GameCurrencyBalance/>
       </Group>
     </Group>
-    <Accordion variant="separated" defaultValue="customization">
-      <Accordion.Item value="customization">
+    <Accordion variant="separated">
+      <Accordion.Item value="stats">
         <Accordion.Control>
           Статистика
         </Accordion.Control>
