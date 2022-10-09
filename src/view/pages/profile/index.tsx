@@ -7,19 +7,80 @@ import {
   Table,
   Text,
   Timeline,
-  UnstyledButton,
   Button,
   Badge,
   Stack,
-  Progress
+  Accordion,
+  Center,
 } from "@mantine/core";
 import { ProfileLayout } from "../../layouts";
 import { UserButton, TitledCard } from "../../components";
-import { CurrencyEthereum, GitBranch } from "tabler-icons-react";
+import { GitBranch } from "tabler-icons-react";
 import { PlaygroundGridLayout } from "../../layouts";
 import { AchievementsMock, DailyMock, GamesMock } from "../../../data";
 import { GameStatus, Player } from "../../../data";
 import { AchievementsCard, DailyCard } from "./components";
+import { GameCurrencyBalance, GameMMR, GamesPlayedStats } from "../../organisms";
+
+
+
+
+import {
+  AnimatedAxis,
+  AnimatedGrid,
+  AnimatedLineSeries,
+  XYChart,
+  Tooltip,
+} from '@visx/xychart';
+
+const data1 = [
+  { x: '2020-01-01', y: 50 },
+  { x: '2020-01-02', y: 10 },
+  { x: '2020-01-03', y: 20 },
+];
+
+const data2 = [
+  { x: '2020-01-01', y: 30 },
+  { x: '2020-01-02', y: 40 },
+  { x: '2020-01-03', y: 80 },
+];
+
+const accessors = {
+  xAccessor: (d: {x: string, y: number}) => d.x,
+  yAccessor: (d: {x: string, y: number}) => d.y,
+};
+
+const XYChartMock = () => {
+  return <XYChart width={600} height={300} xScale={{ type: 'band' }} yScale={{ type: 'linear' }}>
+    <AnimatedAxis orientation="bottom" />
+    <AnimatedGrid columns={false} numTicks={4} />
+    <AnimatedLineSeries dataKey="Line 1" data={data1} {...accessors} />
+    <AnimatedLineSeries dataKey="Line 2" data={data2} {...accessors} />
+    <Tooltip
+      snapTooltipToDatumX
+      snapTooltipToDatumY
+      showVerticalCrosshair
+      showSeriesGlyphs
+      renderTooltip={({ tooltipData, colorScale }) => {
+        if (tooltipData != undefined && colorScale != undefined) {
+          const key = tooltipData.nearestDatum?.key || ''
+          const datum = tooltipData.nearestDatum?.datum as {x: string, y: number}
+          return <div>
+            <div style={{ color:  colorScale(key) }}>
+              {key}
+            </div>
+            {accessors.xAccessor(datum)}
+            {', '}
+            {accessors.yAccessor(datum)}
+          </div>
+        }
+        return <></>
+      }}
+    />
+  </XYChart>
+}
+
+
 
 
 function ProfilePage () {
@@ -35,22 +96,20 @@ function ProfilePage () {
     size="xl"
   >
     <Timeline active={1} bulletSize={24} lineWidth={2}>
-      <Timeline.Item bullet={<GitBranch size={12} />} title="New branch">
-        <Text color="dimmed" size="sm">You&apos;ve created new branch <Text variant="link" component="span" inherit>fix-notifications</Text> from master</Text>
+      <Timeline.Item bullet={<GitBranch size={12}/>} title="Ход 1">
+        <Text color="dimmed" size="sm">
+          You&apos;ve created new branch from master</Text>
         <Text size="xs" mt={4}>2 hours ago</Text>
       </Timeline.Item>
-
-      <Timeline.Item bullet={<GitBranch size={12} />} title="Commits">
-        <Text color="dimmed" size="sm">You&apos;ve pushed 23 commits to<Text variant="link" component="span" inherit>fix-notifications branch</Text></Text>
+      <Timeline.Item bullet={<GitBranch size={12}/>} title="Ход 2">
+        <Text color="dimmed" size="sm">You&apos;ve pushed 23 commits to</Text>
         <Text size="xs" mt={4}>52 minutes ago</Text>
       </Timeline.Item>
-
-      <Timeline.Item title="Pull request" bullet={<GitBranch size={12} />} lineVariant="dashed">
-        <Text color="dimmed" size="sm">You&apos;ve submitted a pull request<Text variant="link" component="span" inherit>Fix incorrect notification message (#187)</Text></Text>
+      <Timeline.Item bullet={<GitBranch size={12}/>} title="Ход 3"  lineVariant="dashed">
+        <Text color="dimmed" size="sm">You&apos;ve submitted a pull request</Text>
         <Text size="xs" mt={4}>34 minutes ago</Text>
       </Timeline.Item>
-
-      <Timeline.Item title="Code review" bullet={<GitBranch size={12} />}>
+      <Timeline.Item bullet={<GitBranch size={12}/>} title="Ход 4" >
         <Text color="dimmed" size="sm"><Text variant="link" component="span" inherit>Robert Gluesticker</Text> left a code review on your pull request</Text>
         <Text size="xs" mt={4}>12 minutes ago</Text>
       </Timeline.Item>
@@ -136,16 +195,29 @@ function ProfilePage () {
 
 
   const TopPanel = <Paper mb={'xl'} p={'md'} radius={'md'}>
-    <Group position={'apart'}>
+    <Group position={'apart'} mb={'md'}>
       <Group noWrap mx={'lg'}>
         <Avatar radius={'xl'}/>
         <UserButton name={'Vladimir Shustov'} email={'wlashcontact@gmail.com'}/>
       </Group>
-      <UnstyledButton component={Group} mx={'lg'}>
-        <CurrencyEthereum/>
-        <Text size={20}>2321</Text>
-      </UnstyledButton>
+      <Group>
+        <GameMMR/>
+        <GameCurrencyBalance/>
+      </Group>
     </Group>
+    <Accordion variant="separated" defaultValue="customization">
+      <Accordion.Item value="customization">
+        <Accordion.Control>
+          Статистика
+        </Accordion.Control>
+        <Accordion.Panel>
+          <Center>
+            <XYChartMock/>
+            <XYChartMock/>
+          </Center>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
   </Paper>
 
   const LeftPanel = <>
@@ -162,15 +234,7 @@ function ProfilePage () {
   </>
 
   const RightSection = <TitledCard title={'История игр'}>
-    <Progress
-      radius="xl"
-      size={24}
-      sections={[
-        { value: 33, color: 'cyan', label: 'Побед (33%)', tooltip: 'Вы победили 33 раза' },
-        { value: 28, color: 'pink', label: 'Поражений (28%)', tooltip: 'Вы потерпели поражение 28 раз' },
-        { value: 25, color: 'violet', label: 'Ничьих (25%)', tooltip: 'Вы сыграли в ничью 25 раз' },
-      ]}
-    />
+    <GamesPlayedStats/>
     {GameHistoryTable}
   </TitledCard>
 
