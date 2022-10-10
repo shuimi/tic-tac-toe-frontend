@@ -175,7 +175,7 @@ export const MessageCloud = (props: MessageCloudProps) => {
   const leftPosition = !me
   const noPhoto = photo === undefined
 
-  const emptyAvatarMargin = 44
+  const emptyAvatarMargin = 46
 
   return <Group align={'flex-end'} position={leftPosition ? 'left' : 'right'} mb={6}>
     {
