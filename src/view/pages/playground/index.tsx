@@ -66,7 +66,7 @@ function PlaygroundPage () {
       </Grid.Col>
       <Grid.Col span={'auto'}>
         <Stack align={'center'}>
-          <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}} withBorder>
+          <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}}>
             <Group align={'flex-end'}>
               <Select
                 label='Тип игры'
