@@ -12,7 +12,7 @@ import {
   UnstyledButton
 } from "@mantine/core";
 import { BrandTelegram, ChevronRight, Robot, ThreeDCubeSphere } from "tabler-icons-react";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 
 const GlobalChatMessagesMock = [
@@ -208,8 +208,23 @@ export const MessageCloud = (props: MessageCloudProps) => {
 interface GlobalChatProps {}
 
 export const GlobalChat = (props: GlobalChatProps) => {
+
+  const {} = props
+
+  const viewport = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () =>
+    viewport?.current?.scrollTo({ top: viewport.current.scrollHeight, behavior: 'smooth' });
+
+  useEffect(() => scrollToBottom(), [])
+
   return <Stack style={{height: 700, width: 472}}>
-    <ScrollArea scrollbarSize={4} scrollHideDelay={250} offsetScrollbars>
+    <ScrollArea
+      scrollbarSize={4}
+      scrollHideDelay={250}
+      viewportRef={viewport}
+      offsetScrollbars
+    >
       {
         GlobalChatMessagesMock
           .map((message, index, messages) => {
