@@ -1,16 +1,16 @@
-export enum Mark {
+export enum PlaygroundMark {
   VOID,
   CROSS,
   ZERO
 }
 
-export interface Cell {
+export interface PlaygroundCell {
   position: number,
-  mark: Mark,
+  mark: PlaygroundMark,
   protected?: boolean,
 }
 
 export interface Playground {
   rank: number,
-  data: Cell[]
+  data: PlaygroundCell[]
 }

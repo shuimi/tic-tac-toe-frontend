@@ -1,9 +1,9 @@
 import { Box, Center } from "@mantine/core";
-import { Mark } from "../../../data";
+import { PlaygroundMark } from "../../../data";
 import { Exposure0, X } from "tabler-icons-react";
 
 interface PlaygroundCellProps {
-  mark: Mark,
+  mark: PlaygroundMark,
   size?: number,
   onClick?: () => void
 }
@@ -28,8 +28,8 @@ export const PlaygroundCell = (props: PlaygroundCellProps) => {
     })}
   >
     <Center style={{ height: size, width: size }}>
-      {mark == Mark.CROSS && <X size={size * 0.65} />}
-      {mark == Mark.ZERO && <Exposure0 size={size * 0.65} />}
+      {mark == PlaygroundMark.CROSS && <X size={size * 0.65} />}
+      {mark == PlaygroundMark.ZERO && <Exposure0 size={size * 0.65} />}
     </Center>
   </Box>
 }

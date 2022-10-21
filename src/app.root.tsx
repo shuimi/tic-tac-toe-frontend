@@ -25,6 +25,6 @@ export const AppRoot = () => {
   </Routes>
 
   return <AppProvider>
-    {Authorized}
+    {Unauthorized}
   </AppProvider>
 }

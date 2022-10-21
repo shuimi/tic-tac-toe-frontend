@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { PlaygroundGridLayout } from "../../layouts";
-import { Cell, GameType, Mark } from "../../../data";
+import { PlaygroundCell, GameType, PlaygroundMark } from "../../../data";
 import { Refresh } from "tabler-icons-react";
 import { TitledCard } from "../../components";
 import { PlayersOnlineList } from "../../organisms/players-online-list";
@@ -28,11 +28,11 @@ function PlaygroundPage () {
   const getInitialPlayground = (gameRank: number) => [...Array(gameRank * gameRank)]
     .map((element, index) => ({
       position: index,
-      mark: Mark.VOID,
+      mark: PlaygroundMark.VOID,
       protected: false,
     }))
 
-  const [playgroundCells, playgroundHandlers] = useListState<Cell>(getInitialPlayground(gameRank))
+  const [playgroundCells, playgroundHandlers] = useListState<PlaygroundCell>(getInitialPlayground(gameRank))
 
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function PlaygroundPage () {
   const onCellClick = (index: number) => {
     playgroundHandlers.setItem(index, {
       position: index,
-      mark: Mark.CROSS,
+      mark: PlaygroundMark.CROSS,
       protected: true,
     })
   }
