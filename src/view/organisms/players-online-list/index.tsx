@@ -48,7 +48,7 @@ export const PlayersOnlineList = (props: PlayersOnlineListProps) => {
     {
       PlayersOnlineMock
         .sort((playerA, playerB) => playerA.mmr - playerB.mmr)
-        .map(playerOnline => <PlayerCard {...playerOnline}/>)
+        .map(playerOnline => <PlayerCard key={`players-list/player/${playerOnline.id}`} {...playerOnline}/>)
     }
   </Stack>
 }

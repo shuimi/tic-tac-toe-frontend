@@ -37,6 +37,11 @@ export const useAuth = () => {
       .then((result) => {
         const accessToken = result.data.accessToken
 
+        setCurrentUser({
+          accessToken: accessToken,
+          user: null,
+        })
+
         UsersService.getMe()
           .then(result => {
             const userData = result.data

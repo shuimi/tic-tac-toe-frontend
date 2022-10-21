@@ -2,27 +2,35 @@ import React from "react";
 import {
   Anchor,
   Button,
-  Container,
+  Container, LoadingOverlay,
   Paper,
   PasswordInput,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
-import { useRouting } from "../../../core/hooks/use-routing";
+import { useAuth } from "../../../data/hooks/http/auth.hook";
+import { useForm } from "@mantine/form";
+import { LoadingWrapper } from "../../layouts/loading-wrapper";
 
 
 function SignInPage () {
 
-  const routing = useRouting()
+  const {pending, login} = useAuth()
 
-  const onRegisterClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault()
-    routing.go.to('signup')
-  }
+  const form = useForm({
+    initialValues: {
+      login: '',
+      password: ''
+    },
+  })
 
   const onLoginClick = () => {
-
+    login(form.values, () => {
+      form.setErrors({
+        password: 'Неверный пароль'
+      })
+    })
   }
 
   return <Container size={420} my={40}>
@@ -31,17 +39,32 @@ function SignInPage () {
     </Title>
     <Text color='dimmed' size='sm' align='center' mt={5}>
       Нет аккаунта?{' '}
-      <Anchor<'a'> href='signup' size='sm' onClick={onRegisterClick}>
+      <Anchor<'a'> href='signup' size='sm'>
         Зарегистрироваться
       </Anchor>
     </Text>
-    <Paper withBorder shadow='md' p={30} mt={30} radius='md'>
-      <TextInput label='Имя пользователя' placeholder='Ваш никнейм' required />
-      <PasswordInput label='Пароль' placeholder='Ваш пароль' required mt='md' />
-      <Button fullWidth mt='xl' onClick={onLoginClick}>
-        Войти
-      </Button>
-    </Paper>
+    <LoadingWrapper loading={pending}>
+      <Paper withBorder shadow='md' p={30} mt={30} radius='md'>
+        <form onSubmit={form.onSubmit(onLoginClick)}>
+          <TextInput
+            {...form.getInputProps('login')}
+            label='Имя пользователя'
+            placeholder='Ваш никнейм'
+            required
+          />
+          <PasswordInput
+            {...form.getInputProps('password')}
+            label='Пароль'
+            placeholder='Ваш пароль'
+            required
+            mt='md'
+          />
+          <Button fullWidth mt='xl' type={'submit'}>
+            Войти
+          </Button>
+        </form>
+      </Paper>
+    </LoadingWrapper>
   </Container>
 }
 

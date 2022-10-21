@@ -2,6 +2,6 @@ import { UserModel } from "../../../models";
 
 
 export interface AuthAtomModel {
-  user: UserModel,
+  user: UserModel | null,
   accessToken: string,
 }

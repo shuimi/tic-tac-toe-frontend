@@ -127,7 +127,7 @@ const GlobalChatMessagesMock = [
     timestamp: new Date(Date.now()).toLocaleTimeString(),
   },
   {
-    id: '5111',
+    id: '51111',
     sender: {
       id: 'id_bot_magnus_5000',
       photo: 'https://previews.123rf.com/images/gmast3r/gmast3r1801/gmast3r180101022/94046703-chatter-bot-cute-robot-icon-in-speech-bubble-icon-concept-of-chatbot-or-chat-bottechnology-flat-vect.jpg',
@@ -137,7 +137,7 @@ const GlobalChatMessagesMock = [
     timestamp: new Date(Date.now()).toLocaleTimeString(),
   },
   {
-    id: '5111',
+    id: '51112',
     sender: {
       id: 'id_bot_magnus_5000',
       photo: 'https://previews.123rf.com/images/gmast3r/gmast3r1801/gmast3r180101022/94046703-chatter-bot-cute-robot-icon-in-speech-bubble-icon-concept-of-chatbot-or-chat-bottechnology-flat-vect.jpg',
@@ -147,7 +147,7 @@ const GlobalChatMessagesMock = [
     timestamp: new Date(Date.now()).toLocaleTimeString(),
   },
   {
-    id: '5111',
+    id: '51113',
     sender: {
       id: 'id_bot_magnus_5000',
       photo: 'https://previews.123rf.com/images/gmast3r/gmast3r1801/gmast3r180101022/94046703-chatter-bot-cute-robot-icon-in-speech-bubble-icon-concept-of-chatbot-or-chat-bottechnology-flat-vect.jpg',
