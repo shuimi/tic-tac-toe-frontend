@@ -16,16 +16,27 @@ import {
 import { PlaygroundGridLayout, ProfileLayout } from "../../layouts";
 import { TitledCard, UserButton } from "../../components";
 import { GitBranch } from "tabler-icons-react";
-import { AchievementsMock, DailyMock, GameStatus, GameStatusModel, Mark, Player, PlaygroundMark } from "../../../data";
+import {
+  AchievementsMock,
+  DailyMock,
+  GameModel,
+  GameStatus,
+  GameStatusModel,
+  Mark,
+  Player,
+  PlaygroundMark
+} from "../../../data";
 import { AchievementsCard, DailyCard } from "./components";
 import { GameCurrencyBalance, GameMMR, GamesPlayedStats } from "../../organisms";
 
 
 import { AnimatedAxis, AnimatedGrid, AnimatedLineSeries, Tooltip, XYChart, } from '@visx/xychart';
 import { useGamesHistory } from "../../../data/hooks/http/games-history.hook";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { currentUserAtom } from "../../../data/stores/atoms/auth";
 import { LoadingWrapper } from "../../layouts/loading-wrapper";
+import { useRouting } from "../../../core/hooks/use-routing";
+import { gameAtom } from "../playground/store";
 
 
 const data1 = [
@@ -80,6 +91,8 @@ const XYChartMock = () => {
 
 function StatsPage () {
 
+  const routing = useRouting()
+
   const [historyDrawerOpened, setHistoryDrawerOpened] = useState(false)
 
   const HistoryDrawer = <Drawer
@@ -116,92 +129,117 @@ function StatsPage () {
   const {gamesHistory, updateHistory, pending} = useGamesHistory()
   useEffect(updateHistory, [])
 
-  const Rows = gamesHistory
-    .map(game => ({
-      id: game.id,
-      rank: game.board.n,
-      winCondition: game.board.k,
-      firstTurn: game.playerX === currentUser.user?.id ? Player.PLAYER : Player.BOT,
-      history: game.moves,
-      lastPosition: game.board.fields
-        .map(field => (
-          field === Mark.X
-            ? PlaygroundMark.CROSS
-            : field === Mark.O
+  const setGame = useSetRecoilState(gameAtom)
+
+  const onContinueUnfinishedGameClick = (game: GameModel) => {
+    setGame(game)
+    routing.go.root()
+  }
+
+  const sortedGameHistory = [...gamesHistory]
+    .sort((a, b) => {
+      return new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    })
+
+  const Rows = sortedGameHistory
+    .map((unprocessedGame) => {
+
+      const game = {
+        id: unprocessedGame.id,
+        rank: unprocessedGame.board.n,
+        winCondition: unprocessedGame.board.k,
+        firstTurn: unprocessedGame.playerX === currentUser.user?.id ? Player.PLAYER : Player.BOT,
+        history: unprocessedGame.moves,
+        lastPosition: unprocessedGame.board.fields
+          .map(field => (
+            field === Mark.X
               ? PlaygroundMark.CROSS
-              : PlaygroundMark.VOID
-        )),
-      timestamp: game.finishDate,
-      status: game.status === GameStatusModel.DRAW
-        ? GameStatus.FINISHED_DRAW
-        : game.status === GameStatusModel.NOT_FINISHED
-          ? GameStatus.UNFINISHED
-          : game.playerX === currentUser.user?.id
-            ? game.status === GameStatusModel.X_WIN
-              ? GameStatus.FINISHED_WIN
-              : GameStatus.FINISHED_LOSE
-            : game.status === GameStatusModel.O_WIN
-              ? GameStatus.FINISHED_WIN
-              : GameStatus.FINISHED_LOSE
-    }))
-    .map((game) => {
+              : field === Mark.O
+                ? PlaygroundMark.ZERO
+                : PlaygroundMark.VOID
+          )),
+        timestamp: `
+          ${new Date(unprocessedGame.startDate).toLocaleDateString()} 
+          ${new Date(unprocessedGame.startDate).toLocaleTimeString()}
+        `,
+        status: unprocessedGame.status === GameStatusModel.DRAW
+          ? GameStatus.FINISHED_DRAW
+          : unprocessedGame.status === GameStatusModel.NOT_FINISHED
+            ? GameStatus.UNFINISHED
+            : unprocessedGame.playerX === currentUser.user?.id
+              ? unprocessedGame.status === GameStatusModel.X_WIN
+                ? GameStatus.FINISHED_WIN
+                : GameStatus.FINISHED_LOSE
+              : unprocessedGame.status === GameStatusModel.O_WIN
+                ? GameStatus.FINISHED_WIN
+                : GameStatus.FINISHED_LOSE
+      }
 
-    const onOpenHistoryClick = () => {
-      setHistoryDrawerOpened(true)
-    }
+      const onOpenHistoryClick = () => {
+        setHistoryDrawerOpened(true)
+      }
 
-    const firstTurnEntity =
-      game.firstTurn == Player.BOT
-        ? <Badge size={'lg'} color={'gray'} variant={'dot'}>Бот</Badge>
-        : game.firstTurn == Player.PLAYER
-          ? <Badge size={'lg'} color={'green'} variant={'dot'}>Игрок</Badge>
-          : <Badge size={'lg'} color={'red'} variant={'dot'}>Аноним</Badge>
-
-
-    const ROW_MAX_HEIGHT = 40 * 3
-    const gameRank = game.rank
-
-    const LastPositionPlaygroundPreview = <Group>
-      <PlaygroundGridLayout
-        rank={gameRank}
-        data={
-          game.lastPosition.map((positionCode, index) => ({
-            position: index,
-            mark: positionCode,
-          }))
-        }
-        sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
-        spacing={30 / gameRank}
-        withPadding
-      />
-    </Group>
-
-    const timestamp = game.timestamp
-
-    const status =
-      game.status == GameStatus.UNFINISHED
-        ? <Badge size={'lg'} color={'gray'} variant={'dot'}>Не завершена</Badge>
-        : game.status == GameStatus.FINISHED_WIN
-          ? <Badge size={'lg'} color={'green'} variant={'dot'}>Победа</Badge>
-          : game.status == GameStatus.FINISHED_LOSE
-            ? <Badge size={'lg'} color={'red'} variant={'dot'}>Поражение</Badge>
-            : game.status == GameStatus.FINISHED_DRAW
-              ? <Badge size={'lg'} color={'cyan'} variant={'dot'}>Ничья</Badge>
-              : <Badge size={'lg'} color={'red'} variant={'dot'}>Неизвестный исход</Badge>
+      const firstTurnEntity =
+        game.firstTurn == Player.BOT
+          ? <Badge size={'lg'} color={'gray'} variant={'dot'}>Бот</Badge>
+          : game.firstTurn == Player.PLAYER
+            ? <Badge size={'lg'} color={'green'} variant={'dot'}>Игрок</Badge>
+            : <Badge size={'lg'} color={'red'} variant={'dot'}>Аноним</Badge>
 
 
-    return <tr key={game.id}>
-      <td>{firstTurnEntity}</td>
-      <td>
-        <Text mb={'xs'}>Всего ходов: {game.history.length}</Text>
-        <Button onClick={onOpenHistoryClick}>
-          Показать
-        </Button>
-      </td>
-      <td>{LastPositionPlaygroundPreview}</td>
-      <td>{timestamp}</td>
-      <td>{status}</td>
-    </tr>
+      const ROW_MAX_HEIGHT = 40 * 3
+      const gameRank = game.rank
+
+      const LastPositionPlaygroundPreview = <Group>
+        <PlaygroundGridLayout
+          rank={gameRank}
+          data={
+            game.lastPosition.map((positionCode, index) => ({
+              position: index,
+              mark: positionCode,
+            }))
+          }
+          sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
+          spacing={30 / gameRank}
+          withPadding
+        />
+      </Group>
+
+      const timestamp = game.timestamp
+
+      const status =
+        game.status == GameStatus.UNFINISHED
+          ? <Badge size={'lg'} color={'gray'} variant={'dot'}>Не завершена</Badge>
+          : game.status == GameStatus.FINISHED_WIN
+            ? <Badge size={'lg'} color={'green'} variant={'dot'}>Победа</Badge>
+            : game.status == GameStatus.FINISHED_LOSE
+              ? <Badge size={'lg'} color={'red'} variant={'dot'}>Поражение</Badge>
+              : game.status == GameStatus.FINISHED_DRAW
+                ? <Badge size={'lg'} color={'cyan'} variant={'dot'}>Ничья</Badge>
+                : <Badge size={'lg'} color={'red'} variant={'dot'}>Неизвестный исход</Badge>
+
+
+      return <tr key={game.id}>
+        <td>{firstTurnEntity}</td>
+        <td>
+          <Text mb={'xs'}>Всего ходов: {game.history.length}</Text>
+          <Button onClick={onOpenHistoryClick}>
+            Показать
+          </Button>
+        </td>
+        <td>{LastPositionPlaygroundPreview}</td>
+        <td>{timestamp}</td>
+        <td>
+          <Stack>
+            {status}
+            {game.status == GameStatus.UNFINISHED && <Button onClick={() => {
+              onContinueUnfinishedGameClick(unprocessedGame)
+            }}>
+              Продолжить
+            </Button>}
+          </Stack>
+        </td>
+      </tr>
   })
 
 

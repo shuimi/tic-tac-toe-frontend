@@ -148,6 +148,14 @@ function PlaygroundPage () {
   }
 
   useEffect(() => {
+    if (game) {
+      playgroundHandlers.setState(getPlaygroundCells())
+      setGameRank(game.board.n)
+      setWinCondition(game.board.k)
+    }
+  }, [])
+
+  useEffect(() => {
     playgroundHandlers.setState(getPlaygroundCells())
   }, [game])
 
@@ -269,7 +277,17 @@ function PlaygroundPage () {
     </Group>
   </TitledCard>
 
-  const CurrentGame = <></>
+  const CurrentGame = <TitledCard
+    title={isEnemySelected ? `Новая игра с ${selectedEnemy?.name}` : `Новая игра`}
+    style={{width: 180 * 3 + 10}}
+  >
+    <Group mt={4}>
+      <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled>
+        Сдаться
+      </Button>
+    </Group>
+  </TitledCard>
+
 
 
   const currentUser = useRecoilValue(currentUserAtom)
