@@ -10,7 +10,7 @@ export interface GameModel {
   status: GameStatusModel,
   takeBacksLeft: number,
   moves: MoveModel[],
-  startDate: Date,
-  finishDate: Date,
+  startDate: string,
+  finishDate: string,
   version: number,
 }

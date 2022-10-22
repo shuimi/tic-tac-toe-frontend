@@ -1,63 +1,295 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
+  Accordion,
+  ActionIcon, Avatar,
   Button,
   Center,
   Container,
-  Stack,
+  Grid,
   Group,
-  ActionIcon,
+  Input,
   NumberInput,
-  NumberInputHandlers, Select, Input, Grid
+  NumberInputHandlers, Paper,
+  SegmentedControl,
+  Select,
+  Stack,
+  Text
 } from "@mantine/core";
-import { useListState } from "@mantine/hooks";
 import { PlaygroundGridLayout } from "../../layouts";
-import { PlaygroundCell, GameType, PlaygroundMark } from "../../../data";
+import { GameType, Mark, PlaygroundCell, PlaygroundMark } from "../../../data";
 import { Refresh } from "tabler-icons-react";
-import { TitledCard } from "../../components";
+import { TitledCard, UserButton } from "../../components";
 import { PlayersOnlineList } from "../../organisms/players-online-list";
 import { GlobalChat } from "../../organisms/global-chat";
+import { useRecoilState, useRecoilValue } from "recoil";
+
+import {
+  enemyIsSelected,
+  firstTurnMarkAtom,
+  gameIsStarted,
+  gameRankAtom,
+  gameTypeAtom,
+  selectedEnemyAtom,
+  winConditionAtom
+} from "./store";
+import { useGame } from "../../../data/hooks/http/game.hook";
+import { useListState } from "@mantine/hooks";
+import { LoadingWrapper } from "../../layouts/loading-wrapper";
+import { closeAllModals, closeModal, openModal } from "@mantine/modals";
+import { GameCurrencyBalance, GameMMR } from "../../organisms";
+import { currentUserAtom } from "../../../data/stores/atoms/auth";
 
 
 function PlaygroundPage () {
 
   const ROW_MAX_HEIGHT = 180 * 3
 
-  const [gameRank, setGameRank] = useState(3)
-  const handlers = useRef<NumberInputHandlers>()
+  const isEnemySelected = useRecoilValue(enemyIsSelected)
+  const selectedEnemy = useRecoilValue(selectedEnemyAtom)
+
+  const [gameRank, setGameRank] = useRecoilState(gameRankAtom)
+  const [winCondition, setWinCondition] = useRecoilState(winConditionAtom)
+
+  const gameRankHandlers = useRef<NumberInputHandlers>()
+  const winConditionHandlers = useRef<NumberInputHandlers>()
+
+  const onIncrementSize = () => gameRankHandlers.current?.increment()
+  const onDecrementSize = () => gameRankHandlers.current?.decrement()
+  const onIncrementWinCondition = () => winConditionHandlers.current?.increment()
+  const onDecrementWinCondition = () => winConditionHandlers.current?.decrement()
+
+  const [gameType, setGameType] = useRecoilState(gameTypeAtom)
+
+  useEffect(() => {
+    switch (gameType) {
+      case GameType.CLASSIC: {
+        setGameRank(3)
+        setWinCondition(3)
+        break
+      }
+      case GameType.GOMOKU: {
+        setGameRank(15)
+        setWinCondition(5)
+        break
+      }
+    }
+  }, [gameType])
+
+  useEffect(() => {
+    if (winCondition > gameRank)
+      setWinCondition(gameRank)
+  }, [gameRank])
+
+  const disableSizeControls = gameType !== GameType.CUSTOM
+
+
+  const {pending, game, start, move, reset} = useGame({
+    onWin: () => openModal({
+      title: 'Вы победили!',
+      children: (
+        <Button onClick={() => {
+          reset()
+          closeAllModals()
+        }}>
+          Ура!
+        </Button>
+      ),
+    }),
+    onLose: () => openModal({
+      title: 'Жаль, но вы проиграли...',
+      children: (
+        <Button onClick={() => {
+          reset()
+          closeAllModals()
+        }}>
+          Ещё разок...
+        </Button>
+      ),
+    }),
+    onDraw: () => openModal({
+      title: 'Ничья! Вы сражались на равных с искуственным интеллектом!',
+      children: (
+        <Button onClick={() => {
+          reset()
+          closeAllModals()
+        }}>
+          Я могу победить его!
+        </Button>
+      ),
+    })
+  })
+
+  const isGameStarted = useRecoilValue(gameIsStarted)
 
   const getInitialPlayground = (gameRank: number) => [...Array(gameRank * gameRank)]
     .map((element, index) => ({
       position: index,
       mark: PlaygroundMark.VOID,
-      protected: false,
+      protected: true,
     }))
 
   const [playgroundCells, playgroundHandlers] = useListState<PlaygroundCell>(getInitialPlayground(gameRank))
 
+  const getPlaygroundCells = () => {
+    if (game?.board) {
+      return game?.board.fields.map((field, index) => ({
+        position: index,
+        mark: field === Mark.X
+          ? PlaygroundMark.CROSS
+          : field === Mark.O
+            ? PlaygroundMark.ZERO
+            : PlaygroundMark.VOID,
+        protected: field != Mark.EMPTY
+      }))
+    }
+    else {
+      return getInitialPlayground(gameRank)
+    }
+  }
+
+  useEffect(() => {
+    playgroundHandlers.setState(getPlaygroundCells())
+  }, [game])
 
   useEffect(() => {
     playgroundHandlers.setState(getInitialPlayground(gameRank))
   }, [gameRank])
 
+  const onCellClick = (index: number) => move(index)
+  const onPlayClick = () => start()
+  const onSurrenderClick = () => {}
 
-  const onIncrementSize = () => handlers.current?.increment()
 
-  const onDecrementSize = () => handlers.current?.decrement()
+  const [firstTurnMark, setFirstTurnMark] = useRecoilState(firstTurnMarkAtom)
 
-  const onCellClick = (index: number) => {
-    playgroundHandlers.setItem(index, {
-      position: index,
-      mark: PlaygroundMark.CROSS,
-      protected: true,
-    })
-  }
 
-  const onResetClick = () => {
-    playgroundHandlers.setState(getInitialPlayground(gameRank))
-  }
+  const GameSettings = <TitledCard
+    title={isEnemySelected ? `Новая игра с ${selectedEnemy?.name}` : `Новая игра`}
+    style={{width: 180 * 3 + 10}}
+  >
+    <Group align={'flex-end'}>
+      <Select
+        label='Тип игры'
+        placeholder="Выберите тип пигры"
+        data={[
+          { value: GameType.CLASSIC, label: 'Классика' },
+          { value: GameType.GOMOKU, label: 'Гомоку' },
+          { value: GameType.CUSTOM, label: 'Своя' },
+        ]}
+        value={gameType}
+        defaultValue={GameType.CLASSIC}
+        onChange={setGameType}
+      />
+      <Input.Wrapper label={'Размер поля'}>
+        <Group spacing={5}>
+          <ActionIcon
+            size={36}
+            variant='default'
+            onClick={onDecrementSize}
+            disabled={disableSizeControls}
+          >
+            –
+          </ActionIcon>
+          <NumberInput
+            disabled={disableSizeControls}
+            hideControls
+            value={gameRank}
+            onChange={(val) => val && setGameRank(val)}
+            handlersRef={gameRankHandlers}
+            max={15}
+            min={3}
+            step={1}
+            styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+          />
+          <ActionIcon
+            size={36}
+            variant='default'
+            onClick={onIncrementSize}
+            disabled={disableSizeControls}
+          >
+            +
+          </ActionIcon>
+        </Group>
+      </Input.Wrapper>
+      <Input.Wrapper label={'Длина линии'}>
+        <Group spacing={5}>
+          <ActionIcon
+            size={36}
+            variant='default'
+            onClick={onDecrementWinCondition}
+            disabled={disableSizeControls}
+          >
+            –
+          </ActionIcon>
+          <NumberInput
+            disabled={disableSizeControls}
+            hideControls
+            value={winCondition}
+            onChange={(val) => val && setWinCondition(val)}
+            handlersRef={winConditionHandlers}
+            max={gameRank}
+            min={3}
+            step={1}
+            styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
+          />
+          <ActionIcon
+            size={36}
+            variant='default'
+            onClick={onIncrementWinCondition}
+            disabled={disableSizeControls}
+          >
+            +
+          </ActionIcon>
+        </Group>
+      </Input.Wrapper>
+    </Group>
+    <Group mt={4}>
+      <Stack spacing={2} mb={'lg'}>
+        <Text size={14} mb={0} p={0}>Первыми ходят</Text>
+        <SegmentedControl
+          m={0}
+          size={'sm'}
+          value={firstTurnMark}
+          onChange={(value) => setFirstTurnMark(value as Mark)}
+          data={[
+            { label: 'Крестики', value: Mark.X },
+            { label: 'Нолики', value: Mark.O },
+            { label: 'Без разницы', value: Mark.EMPTY },
+          ]}
+        />
+      </Stack>
+    </Group>
+    <Group mt={4}>
+      <Button leftIcon={<Refresh/>} onClick={onPlayClick} disabled={!isEnemySelected}>
+        Начать игру
+      </Button>
+      <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled>
+        Сдаться
+      </Button>
+    </Group>
+  </TitledCard>
+
+  const CurrentGame = <></>
+
+
+  const currentUser = useRecoilValue(currentUserAtom)
+
+  const TopPanel = <Paper mb={'xl'} p={'md'} radius={'md'}>
+    <Group position={'apart'}>
+      <Group noWrap mx={'lg'}>
+        <Avatar radius={'xl'}/>
+        <UserButton name={currentUser.user?.name || ''} email={currentUser.user?.username || ''}/>
+      </Group>
+      <Group>
+        <GameMMR/>
+        <GameCurrencyBalance/>
+      </Group>
+    </Group>
+  </Paper>
 
 
   return <Container>
+    {TopPanel}
     <Grid>
       <Grid.Col span={'content'}>
         <TitledCard title={'Игроки онлайн'}>
@@ -66,69 +298,18 @@ function PlaygroundPage () {
       </Grid.Col>
       <Grid.Col span={'auto'}>
         <Stack align={'center'}>
-          <TitledCard title={'Новая игра'} style={{width: 180 * 3 + 10}}>
-            <Group align={'flex-end'}>
-              <Select
-                label='Тип игры'
-                placeholder="Выберите тип пигры"
-                data={[
-                  { value: GameType.CLASSIC, label: 'Классика' },
-                  { value: GameType.GOMOKU, label: 'Гомоку' },
-                  { value: GameType.CUSTOM, label: 'Своя' },
-                ]}
-                defaultValue={GameType.CLASSIC}
+          {isGameStarted ? CurrentGame : GameSettings}
+          <Center mb={'sm'}>
+            <LoadingWrapper loading={pending}>
+              <PlaygroundGridLayout
+                rank={gameRank}
+                data={playgroundCells}
+                onCellClick={onCellClick}
+                sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
+                spacing={30 / gameRank}
+                withPadding
               />
-              <Input.Wrapper label={'Размер поля'}>
-                <Group spacing={5}>
-                  <ActionIcon size={36} variant="default" onClick={onDecrementSize}>
-                    –
-                  </ActionIcon>
-                  <NumberInput
-                    hideControls
-                    value={gameRank}
-                    onChange={(val) => val && setGameRank(val)}
-                    handlersRef={handlers}
-                    max={15}
-                    min={3}
-                    step={1}
-                    styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
-                  />
-                  <ActionIcon size={36} variant="default" onClick={onIncrementSize}>
-                    +
-                  </ActionIcon>
-                </Group>
-              </Input.Wrapper>
-              <Input.Wrapper label={'Длина линии'}>
-                <Group spacing={5}>
-                  <ActionIcon size={36} variant='default'>
-                    –
-                  </ActionIcon>
-                  <NumberInput
-                    hideControls
-                    max={gameRank}
-                    min={3}
-                    step={1}
-                    styles={{ input: { width: 54, height: 34, textAlign: 'center' } }}
-                  />
-                  <ActionIcon size={36} variant='default'>
-                    +
-                  </ActionIcon>
-                </Group>
-              </Input.Wrapper>
-            </Group>
-            <Button leftIcon={<Refresh/>} onClick={onResetClick}>
-              Сбросить
-            </Button>
-          </TitledCard>
-          <Center mb={'lg'}>
-            <PlaygroundGridLayout
-              rank={gameRank}
-              data={playgroundCells}
-              onCellClick={onCellClick}
-              sellSize={ROW_MAX_HEIGHT / gameRank - (30 / gameRank)}
-              spacing={30 / gameRank}
-              withPadding
-            />
+            </LoadingWrapper>
           </Center>
         </Stack>
       </Grid.Col>

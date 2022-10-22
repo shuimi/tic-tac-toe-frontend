@@ -36,11 +36,7 @@ export const useAuth = () => {
     AuthService.auth(dto)
       .then((result) => {
         const accessToken = result.data.accessToken
-
-        setCurrentUser({
-          accessToken: accessToken,
-          user: null,
-        })
+        localStorage.setItem('accessToken', accessToken)
 
         UsersService.getMe()
           .then(result => {

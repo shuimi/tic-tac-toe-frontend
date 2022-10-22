@@ -2,7 +2,7 @@ import React from "react";
 import {
   Anchor,
   Button,
-  Container, LoadingOverlay,
+  Container,
   Paper,
   PasswordInput,
   Text,

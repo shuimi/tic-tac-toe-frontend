@@ -1,37 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Accordion,
   Avatar,
+  Badge,
+  Button,
+  Center,
   Drawer,
   Group,
   Paper,
+  Stack,
   Table,
   Text,
   Timeline,
-  Button,
-  Badge,
-  Stack,
-  Accordion,
-  Center,
 } from "@mantine/core";
-import { ProfileLayout } from "../../layouts";
-import { UserButton, TitledCard } from "../../components";
+import { PlaygroundGridLayout, ProfileLayout } from "../../layouts";
+import { TitledCard, UserButton } from "../../components";
 import { GitBranch } from "tabler-icons-react";
-import { PlaygroundGridLayout } from "../../layouts";
-import { AchievementsMock, DailyMock, GamesMock } from "../../../data";
-import { GameStatus, Player } from "../../../data";
+import { AchievementsMock, DailyMock, GameStatus, GameStatusModel, Mark, Player, PlaygroundMark } from "../../../data";
 import { AchievementsCard, DailyCard } from "./components";
 import { GameCurrencyBalance, GameMMR, GamesPlayedStats } from "../../organisms";
 
 
+import { AnimatedAxis, AnimatedGrid, AnimatedLineSeries, Tooltip, XYChart, } from '@visx/xychart';
+import { useGamesHistory } from "../../../data/hooks/http/games-history.hook";
+import { useRecoilValue } from "recoil";
+import { currentUserAtom } from "../../../data/stores/atoms/auth";
+import { LoadingWrapper } from "../../layouts/loading-wrapper";
 
-
-import {
-  AnimatedAxis,
-  AnimatedGrid,
-  AnimatedLineSeries,
-  XYChart,
-  Tooltip,
-} from '@visx/xychart';
 
 const data1 = [
   { x: '2020-01-01', y: 50 },
@@ -116,7 +111,40 @@ function StatsPage () {
     </Timeline>
   </Drawer>
 
-  const Rows = GamesMock.map((game) => {
+
+  const currentUser = useRecoilValue(currentUserAtom)
+  const {gamesHistory, updateHistory, pending} = useGamesHistory()
+  useEffect(updateHistory, [])
+
+  const Rows = gamesHistory
+    .map(game => ({
+      id: game.id,
+      rank: game.board.n,
+      winCondition: game.board.k,
+      firstTurn: game.playerX === currentUser.user?.id ? Player.PLAYER : Player.BOT,
+      history: game.moves,
+      lastPosition: game.board.fields
+        .map(field => (
+          field === Mark.X
+            ? PlaygroundMark.CROSS
+            : field === Mark.O
+              ? PlaygroundMark.CROSS
+              : PlaygroundMark.VOID
+        )),
+      timestamp: game.finishDate,
+      status: game.status === GameStatusModel.DRAW
+        ? GameStatus.FINISHED_DRAW
+        : game.status === GameStatusModel.NOT_FINISHED
+          ? GameStatus.UNFINISHED
+          : game.playerX === currentUser.user?.id
+            ? game.status === GameStatusModel.X_WIN
+              ? GameStatus.FINISHED_WIN
+              : GameStatus.FINISHED_LOSE
+            : game.status === GameStatusModel.O_WIN
+              ? GameStatus.FINISHED_WIN
+              : GameStatus.FINISHED_LOSE
+    }))
+    .map((game) => {
 
     const onOpenHistoryClick = () => {
       setHistoryDrawerOpened(true)
@@ -234,8 +262,10 @@ function StatsPage () {
   </>
 
   const RightSection = <TitledCard title={'История игр'}>
-    <GamesPlayedStats/>
-    {GameHistoryTable}
+    <LoadingWrapper loading={pending}>
+      <GamesPlayedStats/>
+      {GameHistoryTable}
+    </LoadingWrapper>
   </TitledCard>
 
 
