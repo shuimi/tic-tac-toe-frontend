@@ -165,7 +165,7 @@ function PlaygroundPage () {
 
   const onCellClick = (index: number) => move(index)
   const onPlayClick = () => start()
-  const onSurrenderClick = () => {}
+  const onSurrenderClick = () => reset()
 
 
   const [firstTurnMark, setFirstTurnMark] = useRecoilState(firstTurnMarkAtom)
@@ -271,9 +271,6 @@ function PlaygroundPage () {
       <Button leftIcon={<Refresh/>} onClick={onPlayClick} disabled={!isEnemySelected}>
         Начать игру
       </Button>
-      <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled>
-        Сдаться
-      </Button>
     </Group>
   </TitledCard>
 
@@ -282,7 +279,7 @@ function PlaygroundPage () {
     style={{width: 180 * 3 + 10}}
   >
     <Group mt={4}>
-      <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled>
+      <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled={!isGameStarted}>
         Сдаться
       </Button>
     </Group>
