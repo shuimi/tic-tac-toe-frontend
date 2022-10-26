@@ -14,8 +14,8 @@ import { useUsers } from "./users.hook";
 
 
 export const useGame = (options?: {
-  onWin?: () => void,
-  onLose?: () => void,
+  onWin?: (deltaMMR?: number | null) => void,
+  onLose?: (deltaMMR?: number | null) => void,
   onDraw?: () => void
 }) => {
 
@@ -61,32 +61,47 @@ export const useGame = (options?: {
       })
         .then(result => {
 
-          switch (result.data.status) {
-            case GameStatusModel.X_WIN: {
-              if (isX)
-                options?.onWin && options?.onWin()
-              else
-                options?.onLose && options?.onLose()
-              break
-            }
-            case GameStatusModel.O_WIN: {
-              if (isX)
-                options?.onLose && options?.onLose()
-              else
-                options?.onWin && options?.onWin()
-              break
-            }
-            case GameStatusModel.DRAW: {
-              options?.onDraw && options?.onDraw()
-              break
-            }
-          }
+          const currentMMRString = currentUser.user?.mmr
 
           if (result.data.status !== GameStatusModel.NOT_FINISHED) {
-            updateUsersOnline()
-            updateMe()
-          }
 
+            updateMe((user) => {
+
+              let deltaMMR = 0
+
+              if (currentMMRString) {
+                const currentMMR = parseInt(currentMMRString)
+                const newMMRString = user?.mmr
+                if (newMMRString) {
+                  const newMMR = parseInt(newMMRString)
+                  deltaMMR = newMMR - currentMMR
+                }
+              }
+
+              switch (result.data.status) {
+                case GameStatusModel.X_WIN: {
+                  if (isX)
+                    options?.onWin && options?.onWin(deltaMMR)
+                  else
+                    options?.onLose && options?.onLose(deltaMMR)
+                  break
+                }
+                case GameStatusModel.O_WIN: {
+                  if (isX)
+                    options?.onLose && options?.onLose(deltaMMR)
+                  else
+                    options?.onWin && options?.onWin(deltaMMR)
+                  break
+                }
+                case GameStatusModel.DRAW: {
+                  options?.onDraw && options?.onDraw()
+                  break
+                }
+              }
+
+            })
+            updateUsersOnline()
+          }
           setGame(result.data)
         })
         .finally(() => setPending(false))

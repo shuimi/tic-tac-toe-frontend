@@ -47,7 +47,9 @@ export const PlaygroundGridLayout = (props: PlaygroundGridProps) => {
             mark={cell.mark}
             size={sellSize}
             onClick={() => {
-              onCellClick && onCellClick(cell.position)
+              if (!cell.protected && onCellClick != undefined) {
+                onCellClick(cell.position)
+              }
             }}
           />
         )

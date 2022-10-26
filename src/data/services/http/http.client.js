@@ -31,13 +31,9 @@ axiosPublic.interceptors.response.use(
     return response
   },
   (error) => {
-    // const currentUser = localStorage.getItem('CurrentUser')
-    // if (currentUser) {
-    //   if (error.response.status === 403) {
-    //     localStorage.clear()
-    //     window.location.replace('/')
-    //   }
-    // }
+    if (error.response.status === 500) {
+      window.location.href = '/500';
+    }
     return Promise.reject(error)
   }
 )

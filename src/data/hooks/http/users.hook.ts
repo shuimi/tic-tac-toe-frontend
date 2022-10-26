@@ -2,6 +2,7 @@ import { UsersService } from "../../services";
 import { useSetRecoilState } from "recoil";
 import { usersOnlineAtom } from "../../../view/pages/playground/store";
 import { currentUserAtom } from "../../stores/atoms/auth";
+import { UserModel } from "../../models";
 
 
 export const useUsers = () => {
@@ -16,7 +17,7 @@ export const useUsers = () => {
       })
   }
 
-  const updateMe = () => {
+  const updateMe = (onUpdated?: (user: UserModel) => void) => {
     const currentUser = localStorage.getItem('CurrentUser')
     if (currentUser) {
       try {
@@ -28,7 +29,9 @@ export const useUsers = () => {
               accessToken: token,
               user: userData,
             })
+            return userData
           })
+          .then(onUpdated)
       }
       catch (error) {
         console.error(error)

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import {
-  Accordion,
-  ActionIcon, Avatar,
+  ActionIcon,
+  Avatar,
   Button,
   Center,
   Container,
@@ -9,7 +9,8 @@ import {
   Group,
   Input,
   NumberInput,
-  NumberInputHandlers, Paper,
+  NumberInputHandlers,
+  Paper,
   SegmentedControl,
   Select,
   Stack,
@@ -17,7 +18,7 @@ import {
 } from "@mantine/core";
 import { PlaygroundGridLayout } from "../../layouts";
 import { GameType, Mark, PlaygroundCell, PlaygroundMark } from "../../../data";
-import { Refresh } from "tabler-icons-react";
+import { Exposure0, Refresh, X } from "tabler-icons-react";
 import { TitledCard, UserButton } from "../../components";
 import { PlayersOnlineList } from "../../organisms/players-online-list";
 import { GlobalChat } from "../../organisms/global-chat";
@@ -25,7 +26,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 
 import {
   enemyIsSelected,
-  firstTurnMarkAtom,
+  firstTurnMarkAtom, gameIsFinished,
   gameIsStarted,
   gameRankAtom,
   gameTypeAtom, isMyTurnSelector,
@@ -35,10 +36,9 @@ import {
 import { useGame } from "../../../data/hooks/http/game.hook";
 import { useListState } from "@mantine/hooks";
 import { LoadingWrapper } from "../../layouts/loading-wrapper";
-import { closeAllModals, closeModal, openModal } from "@mantine/modals";
-import { GameCurrencyBalance, GameMMR } from "../../organisms";
+import { GameMMR } from "../../organisms";
 import { currentUserAtom } from "../../../data/stores/atoms/auth";
-import { usePlayBoardUpdateCron } from "../../../data/cron/playboard.cron";
+import { onDrawModal, onLoseModal, onWinModal } from "./overlays";
 
 
 function PlaygroundPage () {
@@ -83,41 +83,10 @@ function PlaygroundPage () {
 
   const disableSizeControls = gameType !== GameType.CUSTOM
 
-
   const {pending, game, start, move, reset, update} = useGame({
-    onWin: () => openModal({
-      title: 'Вы победили!',
-      children: (
-        <Button onClick={() => {
-          reset()
-          closeAllModals()
-        }}>
-          Ура!
-        </Button>
-      ),
-    }),
-    onLose: () => openModal({
-      title: 'Жаль, но вы проиграли...',
-      children: (
-        <Button onClick={() => {
-          reset()
-          closeAllModals()
-        }}>
-          Ещё разок...
-        </Button>
-      ),
-    }),
-    onDraw: () => openModal({
-      title: 'Ничья! Вы сражались на равных с искуственным интеллектом!',
-      children: (
-        <Button onClick={() => {
-          reset()
-          closeAllModals()
-        }}>
-          Я могу победить его!
-        </Button>
-      ),
-    })
+    onWin: onWinModal,
+    onLose: onLoseModal,
+    onDraw: onDrawModal,
   })
 
   const isGameStarted = useRecoilValue(gameIsStarted)
@@ -153,8 +122,6 @@ function PlaygroundPage () {
   useEffect(() => {
     if (game) {
       playgroundHandlers.setState(getPlaygroundCells())
-      setGameRank(game.board.n)
-      setWinCondition(game.board.k)
     }
   }, [])
 
@@ -281,6 +248,27 @@ function PlaygroundPage () {
     title={isEnemySelected ? `Новая игра с ${selectedEnemy?.name}` : `Новая игра`}
     style={{width: 180 * 3 + 10}}
   >
+    <Stack mx={'md'} mb={'md'}>
+      <Group>
+        <Text>
+          Вы играете за:
+        </Text>
+        <Avatar>
+          {firstTurnMark == Mark.X ? <X/> : <Exposure0/> }
+        </Avatar>
+      </Group>
+      <Text>
+        Сделано ходов: {game?.moves.length}
+      </Text>
+      <Text>
+        <Group>
+          Для победы выстройте в линию {game?.board.k}
+          <Avatar size={'sm'}>
+            {firstTurnMark == Mark.X ? <X/> : <Exposure0/> }
+          </Avatar>
+        </Group>
+      </Text>
+    </Stack>
     <Group mt={4}>
       <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled={!isGameStarted}>
         Сдаться
@@ -303,11 +291,12 @@ function PlaygroundPage () {
       </Group>
       <Group>
         <GameMMR/>
-        <GameCurrencyBalance/>
+        {/*<GameCurrencyBalance/>*/}
       </Group>
     </Group>
   </Paper>
 
+  const isGameFinished = useRecoilValue(gameIsFinished)
   const nowIsMyTurn = useRecoilValue(isMyTurnSelector)
 
 
@@ -325,6 +314,7 @@ function PlaygroundPage () {
           <Center mb={'sm'}>
             <LoadingWrapper loading={pending}>
               <PlaygroundGridLayout
+                disabled={isGameFinished}
                 rank={gameRank}
                 data={playgroundCells}
                 onCellClick={onCellClick}

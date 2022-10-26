@@ -8,10 +8,13 @@ import SignInPage from "./view/pages/sign-in";
 import PlaygroundPage from "./view/pages/playground";
 import StatsPage from "./view/pages/stats";
 import ShopPage from "./view/pages/shop";
+import Error404Page from "./view/pages/errors/404";
+import Error500Page from "./view/pages/errors/500";
 
 import { isAuthenticatedSelector } from "./data/stores/atoms/auth";
 import { useRecoilValue } from "recoil";
 import { userPingCron } from "./data/cron/users.cron";
+
 
 
 const AuthRouter = () => {
@@ -29,6 +32,8 @@ const AuthRouter = () => {
       <Route path={'/'} element={<PlaygroundPage/>} />
       <Route path={'/stats'} element={<StatsPage/>} />
       <Route path={'/shop'} element={<ShopPage/>} />
+      <Route path='*' element={<Error404Page/>}/>
+      <Route path='500' element={<Error500Page/>}/>
     </Routes>
   </AppShellLayout>
 

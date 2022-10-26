@@ -22,6 +22,7 @@ import {
   GameModel,
   GameStatus,
   GameStatusModel,
+  GameType,
   Mark,
   Player,
   PlaygroundMark
@@ -36,7 +37,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { currentUserAtom } from "../../../data/stores/atoms/auth";
 import { LoadingWrapper } from "../../layouts/loading-wrapper";
 import { useRouting } from "../../../core/hooks/use-routing";
-import { gameAtom } from "../playground/store";
+import { firstTurnMarkAtom, gameAtom, gameRankAtom, gameTypeAtom, winConditionAtom } from "../playground/store";
 
 
 const data1 = [
@@ -126,15 +127,49 @@ function StatsPage () {
 
 
   const currentUser = useRecoilValue(currentUserAtom)
+
   const {gamesHistory, updateHistory, pending} = useGamesHistory()
   useEffect(updateHistory, [])
 
+
+  const setFirstTurnMark = useSetRecoilState(firstTurnMarkAtom)
   const setGame = useSetRecoilState(gameAtom)
+  const setGameType = useSetRecoilState(gameTypeAtom)
+  const setGameRank = useSetRecoilState(gameRankAtom)
+  const setWinCondition = useSetRecoilState(winConditionAtom)
+
 
   const onContinueUnfinishedGameClick = (game: GameModel) => {
+
+    currentUser.user?.id == game.playerX
+      ? setFirstTurnMark(Mark.X)
+      : setFirstTurnMark(Mark.O)
+
     setGame(game)
+    setGameRank(game.board.n)
+    setWinCondition(game.board.k)
+
+    switch (game.board.n) {
+      case 3: {
+        game.board.k === 3
+          ? setGameType(GameType.CLASSIC)
+          : setGameType(GameType.CUSTOM)
+        break
+      }
+      case 15: {
+        game.board.k === 5
+          ? setGameType(GameType.GOMOKU)
+          : setGameType(GameType.CUSTOM)
+        break
+      }
+      default: {
+        setGameType(GameType.CUSTOM)
+        break
+      }
+    }
     routing.go.root()
   }
+
 
   const sortedGameHistory = [...gamesHistory]
     .sort((a, b) => {
