@@ -1,6 +1,7 @@
 import { atom, selector } from "recoil";
 import { localStorageEffect } from "../../../../data/stores/effects";
 import { GameModel, GameStatusModel, GameType, Mark, UserModel } from "../../../../data";
+import { currentUserAtom } from "../../../../data/stores/atoms/auth";
 
 
 export const gameRankAtom = atom<number>({
@@ -30,7 +31,8 @@ export const usersOnlineAtom = atom<UserModel[] | null>({
 
 export const selectedEnemyAtom = atom<UserModel | null>({
   key: 'selectedEnemyAtom',
-  default: null
+  default: null,
+  effects: [localStorageEffect('selectedEnemyAtom')]
 })
 
 export const firstTurnMarkAtom = atom<Mark>({
@@ -67,6 +69,32 @@ export const gameIsFinished = selector<boolean>({
   get: ({get}) => {
     const currentGame = get(gameAtom);
     return currentGame?.status !== GameStatusModel.NOT_FINISHED
+  },
+})
+
+export const isMyTurnSelector = selector<boolean>({
+  key: 'isMyTurnSelector',
+  get: ({get}) => {
+
+    const currentGame = get(gameAtom)
+    const me = get(currentUserAtom)
+    const len = currentGame?.board.fields.length
+
+    if (len === 0) {
+      return me.user?.id === currentGame?.playerX
+    }
+
+    if (len){
+      const lastTurn = currentGame?.board.fields[len - 1]
+      if (me.user?.id === currentGame?.playerX) {
+        return lastTurn === Mark.O;
+      }
+      else {
+        return lastTurn === Mark.X;
+      }
+    }
+
+    return false
   },
 })
 

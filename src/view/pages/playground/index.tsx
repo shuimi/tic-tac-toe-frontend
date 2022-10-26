@@ -28,7 +28,7 @@ import {
   firstTurnMarkAtom,
   gameIsStarted,
   gameRankAtom,
-  gameTypeAtom,
+  gameTypeAtom, isMyTurnSelector,
   selectedEnemyAtom,
   winConditionAtom
 } from "./store";
@@ -38,6 +38,7 @@ import { LoadingWrapper } from "../../layouts/loading-wrapper";
 import { closeAllModals, closeModal, openModal } from "@mantine/modals";
 import { GameCurrencyBalance, GameMMR } from "../../organisms";
 import { currentUserAtom } from "../../../data/stores/atoms/auth";
+import { usePlayBoardUpdateCron } from "../../../data/cron/playboard.cron";
 
 
 function PlaygroundPage () {
@@ -83,7 +84,7 @@ function PlaygroundPage () {
   const disableSizeControls = gameType !== GameType.CUSTOM
 
 
-  const {pending, game, start, move, reset} = useGame({
+  const {pending, game, start, move, reset, update} = useGame({
     onWin: () => openModal({
       title: 'Вы победили!',
       children: (
@@ -146,6 +147,8 @@ function PlaygroundPage () {
       return getInitialPlayground(gameRank)
     }
   }
+
+  // usePlayBoardUpdateCron(2000)
 
   useEffect(() => {
     if (game) {
@@ -282,6 +285,9 @@ function PlaygroundPage () {
       <Button leftIcon={<Refresh/>} onClick={onSurrenderClick} disabled={!isGameStarted}>
         Сдаться
       </Button>
+      <Button leftIcon={<Refresh/>} onClick={update} disabled={!isGameStarted}>
+        Обновить
+      </Button>
     </Group>
   </TitledCard>
 
@@ -301,6 +307,8 @@ function PlaygroundPage () {
       </Group>
     </Group>
   </Paper>
+
+  const nowIsMyTurn = useRecoilValue(isMyTurnSelector)
 
 
   return <Container>

@@ -5,15 +5,18 @@ import { Exposure0, X } from "tabler-icons-react";
 interface PlaygroundCellProps {
   mark: PlaygroundMark,
   size?: number,
-  onClick?: () => void
+  onClick?: () => void,
+  disabled?: boolean
 }
 
 export const PlaygroundCell = (props: PlaygroundCellProps) => {
 
-  const {mark, size = 50, onClick} = props
+  const {mark, size = 50, disabled = false, onClick} = props
 
   return <Box
-    onClick={onClick}
+    onClick={() => {
+      if (!disabled && onClick) onClick()
+    }}
     sx={(theme) => ({
       backgroundColor:
         theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.colors.gray[0],

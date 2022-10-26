@@ -93,6 +93,14 @@ export const useGame = (options?: {
     }
   }
 
+  const update = () => {
+    const gameId = game?.id
+    if (gameId) GameService.getById(gameId)
+      .then(result => {
+        setGame(result.data)
+      })
+  }
+
   const reset = () => {
     setGame(null)
   }
@@ -102,6 +110,7 @@ export const useGame = (options?: {
     game,
     start,
     move,
-    reset
+    reset,
+    update,
   }
 }

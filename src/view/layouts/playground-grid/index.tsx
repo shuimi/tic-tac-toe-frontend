@@ -8,7 +8,8 @@ interface PlaygroundGridProps extends Playground {
   sellSize?: number,
   spacing?: number,
   color?: MantineColor,
-  withPadding?: boolean
+  withPadding?: boolean,
+  disabled?: boolean,
 }
 
 export const PlaygroundGridLayout = (props: PlaygroundGridProps) => {
@@ -21,6 +22,7 @@ export const PlaygroundGridLayout = (props: PlaygroundGridProps) => {
     withPadding = false,
     onCellClick,
     color,
+    disabled = false,
     ...others
   } = props
 
@@ -40,6 +42,7 @@ export const PlaygroundGridLayout = (props: PlaygroundGridProps) => {
     >
       {
         data.map((cell) => <PlaygroundCell
+          disabled={disabled}
             key={`${playgroundId}/${cell.position}`}
             mark={cell.mark}
             size={sellSize}
